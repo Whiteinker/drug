@@ -1,0 +1,351 @@
+<style lang="less">
+.page-order-modal {
+  .common-form-box {
+    .ivu-form-item {
+      display: inline-block;
+      width: 44%;
+      margin-bottom: 5px;
+      label.ivu-form-item-label {
+        font-size: 14px;
+      }
+      span {
+        font-size: 14px;
+      }
+    }
+  }
+  .total-box {
+    margin-top: 10px;
+    text-align: right;
+    b {
+      margin-left: 5px;
+      span {
+        font-size: 12px;
+      }
+      font-size: 18px;
+      color: red;
+    }
+  }
+}
+</style>
+<template>
+	<div class='page-order'>
+   
+		<Card>
+			<div slot="title" class="common-table-title">
+				<p>{{$store.getters.currentPageNameCN}}</p>
+				<div class="action">
+					<Button type="info" size="small" icon="loop" @click='getListData'>刷新</Button>
+				</div>
+			</div>
+			<div class="common-search-box">
+         <Select ref='asyncSelectStore' transfer v-model='searchFields.storeId'  placeholder="请选择药店" filterable  @on-change='getListData'>  
+							<Option v-for="t in cacheStore" :value="t.value" :key='t.value'>{{t.label }}</Option>
+				</Select>
+				<Input v-model="searchFields.orderCode" placeholder="请输入完整订单号"></Input>
+				<Input v-model="searchFields.guestName" placeholder="请输入收货人姓名"></Input>       
+				<DatePicker ref='DatePicker' type="daterange" v-model='searchDaterange' :options='searchDaterangeOptions' format='yyyy-MM-dd' placeholder="请输入订单起止时间"></DatePicker>
+				<Button type="primary" icon="search" :loading="searchLoading" @click='searchData'>搜索</Button>
+			</div>
+			<Tabs v-model='searchFields.state' class='margin-top-20' @on-click='getListData'>
+				<TabPane label="全部订单" name="0"></TabPane>
+				<TabPane v-for='t in $store.state.dictionaries.orderState' :label="t.label" :name="t.value.toString()"></TabPane>
+			</Tabs>
+			<Table border :loading="tableLoading" :columns="tableFields" :data="tableList"></Table>
+			<div class="common-page-box">
+				<Page show-sizer show-elevator :page-size-opts="config.pageSizeOpts" :page-size="config.pageSize" :total="config.total" :current="config.currentPage" @on-change="changePage" @on-page-size-change='changePageSize'></Page>
+			</div>
+		</Card>
+		<Modal class='page-order-modal' v-model="showFormModal" width='50%' title="订单详情" :loading='submitFormLoading' ok-text='接单' @on-ok='submitFormData' @on-cancel="closeFormModal">
+			<div class='common-form-box' style='margin-left:0'>
+				<Spin size="large" fix v-if="formLoading"></Spin>
+				<Steps :current="formModel.state" :status='stepsStatus' style='margin-bottom: 40px;margin-top:20px;margin-left:20px;'>
+          <Step v-for='t in $store.state.dictionaries.orderState' :title="t.label" ></Step>
+				
+				</Steps>
+				<Form ref="formModel" :label-width="100" :model="formModel">
+					<Alert>
+						<FormItem label="订单号：">
+							<span>{{formModel.orderCode}}</span>
+						</FormItem>
+						<FormItem label="订单状态：">
+							<Tag color="default">{{$store.getters.dictionaries.orderState[formModel.state]}}</Tag>
+						</FormItem>
+            	<FormItem label="药店名称：">
+							<span>{{formModel.storeName}}</span>
+						</FormItem>
+						<FormItem label="下单时间：">
+							<span>{{formModel.addTime}}</span>
+						</FormItem>
+						<FormItem label="配送时间：">
+							<span>{{formModel.distriTime}}</span>
+						</FormItem>
+						<FormItem label="送达时间：">
+							<span>{{formModel.deliveryTime}}</span>
+						</FormItem>
+					
+						<FormItem label="收货人：">
+							<span>{{formModel.guestName}}</span>
+						</FormItem>
+						<FormItem label="收货人手机：">
+							<span>{{formModel.guestPhone}}</span>
+						</FormItem>
+						<FormItem label="收货地址：" style='display: block;width:100%'>
+							<span>{{formModel.address}}</span>
+						</FormItem>
+						<FormItem label="备注：" style='display: block;width:100%'>
+							<span>{{formModel.remark}}</span>
+						</FormItem>
+						<FormItem label="配送员：">
+							<span>{{formModel.distriUserName}}</span>
+						</FormItem>
+						<FormItem label="配送员手机：">
+							<span>{{formModel.distriUserPhone}}</span>
+						</FormItem>
+
+					</Alert>
+					<Table border class="margin-top-10" :columns="drugTableFields" :data="formModel.orderDetail"></Table>
+					<div class="total-box">
+						总金额
+						<b><span>￥</span>{{formModel.totalPrice}}</b>
+					</div>
+				</Form>
+			</div>
+		</Modal>
+	</div>
+</template>
+<script>
+import mixins from "@/libs/mixins.js";
+import Cookies from "js-cookie";
+import Store from "store";
+export default {
+  name: "order",
+  mixins: [mixins.searchList, mixins.tableList, mixins.page, mixins.form],
+  components: {},
+  data() {
+    return {      
+      stepsStatus: "process", //步骤条状态
+      config: {
+        url: "/order"
+      },   
+       //搜索字段
+    searchFields:{
+        orderCode: "",
+        guestName: "",
+        startDate: "",
+        endDate: "",
+        state: "0",
+        userId: Cookies.get("id"),
+        storeId:Store.get('cacheStore')[0].value
+      },
+      drugTableFields: [
+        // {
+        //   title: "序号",
+        //   type: "index",
+        //   align: "center",
+        //   width: "65px"
+        // },
+        {
+          title: "药品图片",
+          key: "photo",
+          align: "center",
+          width: 100,
+          render: (h, params) => {
+            return h("Avatar", {
+              props: {
+                shape: "square",
+                size: "large",
+                src: params.row.photo
+              }
+            });
+          }
+        },
+        {
+          title: "药品名称",
+          key: "drugName",
+          align: "left",
+          width: 200
+        },
+        {
+          title: "药品编号",
+          key: "drugCode",
+          width: 100
+        },
+        {
+          title: "厂家",
+          key: "manufacturer",
+          align: "left",
+          width: 150
+        },
+        {
+          title: "药品规格",
+          key: "specification",
+          width:120
+        },
+
+        {
+          title: "数量",
+          key: "buyNum",
+          width: 70
+        },
+        {
+          title: "单价",
+          key: "unitPrice",
+          width: 70
+        },
+        {
+          title: "小计",
+          key: "totalPrice",
+           width: 100
+        }
+      ],
+      //表格配置
+      tableFields: [
+        {
+          title: "序号",
+          type: "index",
+          width:65
+        },
+        {
+          title: "订单号",
+          key: "orderCode",
+          width: 150
+        },
+        {
+          title: "药店名称",
+          key: "storeName",
+          align: "left",
+          ellipsis: true
+        },
+        {
+          title: "收货人",
+          key: "guestName",
+          width: 100
+        },
+        {
+          title: "收货人手机",
+          key: "guestPhone",
+          width: 150
+        },
+        {
+          title: "订单状态",
+          key: "state",
+          width: 100,
+          render: (h, params) => {
+            let stateLabel = this.$store.getters.dictionaries.orderState[
+              params.row.state
+            ];
+            return h(
+              "Tag",
+              {
+                props: {
+                  color: "default"
+                }
+              },
+              stateLabel
+            );
+          }
+        },
+        // {
+        //   title: "备注",
+        //   key: "remark",
+        //   align: "left"
+        // },
+        {
+          title: "下单时间",
+          key: "addTime",
+          width: 150
+        },
+        {
+          title: "操作",
+          width: 200,
+          key: "action",
+          render: (h, params) => {
+            return h("div", [
+              h(
+                "Button",
+                {
+                  props: {
+                    icon: "eye",
+                    type: "info",
+                    size: "small"
+                  },
+                  style: {
+                    marginRight: "5px"
+                  },
+                  on: {
+                    click: () => {
+                      this.openFormModal({
+                        id: params.row.id
+                      });
+                    }
+                  }
+                },
+                "查看"
+              ),
+              h(
+                "Poptip",
+                {
+                  props: {
+                    confirm: true,
+                    title: "您确定要删除这条数据吗?",
+                    transfer: true
+                  },
+                  on: {
+                    "on-ok": () => {
+                      this.deleteListData({
+                        id: params.row.id
+                      });
+                    }
+                  }
+                },
+                [
+                  h(
+                    "Button",
+                    {
+                      props: {
+                        icon: "trash-a",
+                        type: "error",
+                        size: "small"
+                      }
+                    },
+                    "删除"
+                  )
+                ]
+              )
+            ]);
+          }
+        }
+      ],
+      //表单数据字段
+      formModel: {
+        storeName: "",
+        orderCode: "",
+        comeFrom: "",
+        storeId: "",
+        userId: Cookies.get("id"),
+        orderDetail: [],
+        state: 0,
+        guestName: "",
+        guestPhone: "",
+        remark: "",
+        address: "",
+        distriUserName: "",
+        distriUserPhone: "",
+        distriTime: "",
+        deliveryTime: "",
+        totalPrice: "",
+        addTime: ""
+      }
+    };
+  },
+  computed: {   
+    
+  },
+  mounted() {    
+    this.getListData();
+  },
+  methods: {
+   
+  }
+};
+</script>

@@ -1,0 +1,135 @@
+.clearfix:after {
+  content: ".";
+  display: block;
+  height: 0;
+  clear: both;
+  visibility: hidden;
+}
+.width-100px {
+  width: 100px;
+}
+.width-200px {
+  width: 200px;
+}
+.width-300px {
+  width: 300px;
+}
+.hidden {
+  display: none!important;
+}
+.fr {
+  float: right;
+}
+.fl {
+  float: left;
+}
+.ivu-dropdown-transfer {
+  width: auto!important;
+}
+.common-table-title p {
+  width: 68.5%!important;
+}
+.common-table-title .action {
+  display: inline-block;
+  width: 30%;
+  text-align: right;
+  float: right;
+  vertical-align: 5px;
+}
+.common-page-box {
+  margin: 10px 0px;
+  text-align: right;
+}
+.common-page-box .ivu-page {
+  display: inline-block;
+}
+.common-search-box .ivu-input-wrapper {
+  width: 200px;
+  display: inline-block;
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+.common-search-box .ivu-date-picker {
+  width: 200px;
+  display: inline-block;
+  margin-right: 5px;
+}
+.common-search-box .operation {
+  float: right;
+  margin-top: 5px;
+}
+.common-search-box button {
+  vertical-align: 2px;
+}
+.common-form-box {
+  margin-left: -30px;
+  padding: 16px;
+}
+.common-form-box .ivu-form-item {
+  width: 29.8%;
+  margin-left: 30px;
+  margin-right: 0px!important;
+}
+.common-form-box .ivu-input-number {
+  width: 100%;
+}
+.common-form-box .ivu-date-picker {
+  width: 100%;
+}
+.common-form-box textarea {
+  width: 99%;
+}
+.tableModal .ivu-modal-footer {
+  display: none;
+}
+.tableModal .ivu-modal-body {
+  padding: 0px;
+}
+.tableModal .modal-button-group {
+  display: inline-block;
+  border-top: 1px solid #e9eaec;
+  padding: 12px 18px;
+  text-align: right;
+  width: 100%;
+  margin: 0px;
+}
+.common-file-base64 {
+  width: 140px;
+  display: block;
+}
+.common-file-base64 input[type=file] {
+  opacity: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 140px;
+  height: 140px;
+}
+.common-file-base64 input[type=file]:hover {
+  cursor: pointer;
+}
+.common-file-base64 .ivu-avatar-large {
+  width: 140px;
+  height: 140px;
+  line-height: 140px;
+  font-size: 52px!important;
+  border-radius: 3px;
+  border: 1px solid #dddee1;
+}
+.ivu-table-wrapper .ivu-table td,
+.ivu-table-wrapper .ivu-table th {
+  text-align: center;
+}
+.ivu-table-wrapper td.ivu-table-column-left,
+.ivu-table-wrapper th.ivu-table-column-left {
+  text-align: left;
+}
+.ivu-modal-footer .ivu-btn-text {
+  float: right;
+}
+.ivu-poptip-footer .ivu-btn-text {
+  float: right;
+}
+.ivu-table-cell .ivu-avatar {
+  margin-top: 5px;
+}

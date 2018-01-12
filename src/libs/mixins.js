@@ -229,7 +229,6 @@ export default {
 			},
 			//提交表单(提交的loading做了特殊处理，为了iview的modal确定按钮回调做处理)
 			submitFormData() {
-
 				this.$refs['formModel'].validate((valid) => {
 					if (valid) {
 						this.submitFormLoading = true;
@@ -291,13 +290,16 @@ export default {
 
 			},
 			//图片字段base64的处理
-			changeFile(e, key) {
+			changeFile(e, key) {	
 				lrz(e.target.files[0], {
 					width: 300,
 					height: 300,
 					quality: 1
 				}).then((res) => {
 					this.formModel[key] = res.base64;
+					//处理第二次change失效
+					e.target.setAttribute('type','text')
+					e.target.setAttribute('type','file')
 				})
 			},
 

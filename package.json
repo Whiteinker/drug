@@ -31,6 +31,8 @@
     "html2canvas": "^0.5.0-beta4",
     "iview": "^2.5.0-beta.1",
     "iview-area": "^1.0.13",
+    "jQuery": "^1.7.4",
+    "jquery": "^3.2.1",
     "js-cookie": "^2.1.3",
     "lodash": "^4.17.4",
     "lrz": "^4.9.40",
@@ -42,7 +44,9 @@
     "vue": "^2.5.2",
     "vue-i18n": "^5.0.3",
     "vue-router": "^2.8.1",
-    "vuex": "^2.5.0"
+    "vuex": "^2.5.0",
+    "ztree": "^3.5.24",
+    "ztree-vue": "^1.0.3"
   },
   "devDependencies": {
     "autoprefixer-loader": "^2.0.0",

@@ -217,23 +217,23 @@ export const appRouter = [
 
 		]
 	},
-	{
-		path: '/guest',
-		icon: 'ios-person',
-		name: 'guest',
-		title: '客户信息',
-		component: Main,
-		children: [{
-				path: 'index',
-				title: '客户信息列表',
-				name: 'guest-index',
-				component: resolve => {
-					require(['./views/guest/guest.vue'], resolve);
-				}
-			},
+	// {
+	// 	path: '/guest',
+	// 	icon: 'ios-person',
+	// 	name: 'guest',
+	// 	title: '客户信息',
+	// 	component: Main,
+	// 	children: [{
+	// 			path: 'index',
+	// 			title: '客户信息列表',
+	// 			name: 'guest-index',
+	// 			component: resolve => {
+	// 				require(['./views/guest/guest.vue'], resolve);
+	// 			}
+	// 		},
 
-		]
-	},
+	// 	]
+	// },
 	{
 		path: '/dataChart',
 		icon: 'connection-bars',

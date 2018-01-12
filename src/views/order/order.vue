@@ -25,6 +25,13 @@
       color: red;
     }
   }
+  .ivu-modal-footer {
+    display: none;
+  }
+  .btn-group{
+    text-align: center;
+    margin-top:20px;
+  }
 }
 </style>
 <template>
@@ -55,12 +62,11 @@
 				<Page show-sizer show-elevator :page-size-opts="config.pageSizeOpts" :page-size="config.pageSize" :total="config.total" :current="config.currentPage" @on-change="changePage" @on-page-size-change='changePageSize'></Page>
 			</div>
 		</Card>
-		<Modal class='page-order-modal' v-model="showFormModal" width='50%' title="订单详情" :loading='submitFormLoading' ok-text='接单' @on-ok='submitFormData' @on-cancel="closeFormModal">
+		<Modal class='page-order-modal' v-model="showFormModal" width='50%' title="订单详情">
 			<div class='common-form-box' style='margin-left:0'>
 				<Spin size="large" fix v-if="formLoading"></Spin>
-				<Steps :current="formModel.state" :status='stepsStatus' style='margin-bottom: 40px;margin-top:20px;margin-left:20px;'>
-          <Step v-for='t in $store.state.dictionaries.orderState' :title="t.label" ></Step>
-				
+				<Steps :current="formModel.state-1" :status='stepsStatus' style='margin-bottom: 40px;margin-top:20px;margin-left:20px;'>
+          <Step v-for='t in $store.state.dictionaries.orderState' :title="t.label" ></Step>				
 				</Steps>
 				<Form ref="formModel" :label-width="100" :model="formModel">
 					<Alert>
@@ -84,10 +90,10 @@
 						</FormItem>
 					
 						<FormItem label="收货人：">
-							<span>{{formModel.guestName}}</span>
+							<span>{{formModel.orderUserName}}</span>
 						</FormItem>
 						<FormItem label="收货人手机：">
-							<span>{{formModel.guestPhone}}</span>
+							<span>{{formModel.orderUserPhone}}</span>
 						</FormItem>
 						<FormItem label="收货地址：" style='display: block;width:100%'>
 							<span>{{formModel.address}}</span>
@@ -109,6 +115,10 @@
 						<b><span>￥</span>{{formModel.totalPrice}}</b>
 					</div>
 				</Form>
+        <div class='btn-group' slot='footer'>
+             <Button v-if='formModel.state==1' type="primary" :loading='submitFormLoading' @click='meetOrder'>接单</Button>
+              <Button v-if='formModel.state==2' type="primary" :loading='submitFormLoading' @click='distribution'>配送</Button>
+        </div>
 			</div>
 		</Modal>
 	</div>
@@ -122,20 +132,21 @@ export default {
   mixins: [mixins.searchList, mixins.tableList, mixins.page, mixins.form],
   components: {},
   data() {
-    return {      
+    return {
+      submitFormLoading: false,
       stepsStatus: "process", //步骤条状态
       config: {
         url: "/order"
-      },   
-       //搜索字段
-    searchFields:{
+      },
+      //搜索字段
+      searchFields: {
         orderCode: "",
         guestName: "",
         startDate: "",
         endDate: "",
         state: "0",
         userId: Cookies.get("id"),
-        storeId:Store.get('cacheStore')[0].value
+        storeId: Store.get("cacheStore")[0].value
       },
       drugTableFields: [
         // {
@@ -179,7 +190,7 @@ export default {
         {
           title: "药品规格",
           key: "specification",
-          width:120
+          width: 120
         },
 
         {
@@ -195,7 +206,7 @@ export default {
         {
           title: "小计",
           key: "totalPrice",
-           width: 100
+          width: 100
         }
       ],
       //表格配置
@@ -203,27 +214,27 @@ export default {
         {
           title: "序号",
           type: "index",
-          width:65
+          width: 65
         },
         {
           title: "订单号",
           key: "orderCode",
           width: 150
         },
-        {
-          title: "药店名称",
-          key: "storeName",
-          align: "left",
-          ellipsis: true
-        },
+        // {
+        //   title: "药店名称",
+        //   key: "storeName",
+        //   align: "left",
+        //   ellipsis: true
+        // },
         {
           title: "收货人",
-          key: "guestName",
+          key: "orderUserName",
           width: 100
         },
         {
           title: "收货人手机",
-          key: "guestPhone",
+          key: "orderUserPhone",
           width: 150
         },
         {
@@ -245,11 +256,11 @@ export default {
             );
           }
         },
-        // {
-        //   title: "备注",
-        //   key: "remark",
-        //   align: "left"
-        // },
+        {
+          title: "备注",
+          key: "remark",
+          align: "left"
+        },
         {
           title: "下单时间",
           key: "addTime",
@@ -324,9 +335,9 @@ export default {
         storeId: "",
         userId: Cookies.get("id"),
         orderDetail: [],
-        state: 0,
-        guestName: "",
-        guestPhone: "",
+        state: 1,
+        orderUserName: "",
+        orderUserPhone: "",
         remark: "",
         address: "",
         distriUserName: "",
@@ -338,14 +349,37 @@ export default {
       }
     };
   },
-  computed: {   
-    
-  },
-  mounted() {    
+  computed: {},
+  mounted() {
     this.getListData();
   },
   methods: {
-   
+    meetOrder() {
+      this.formModel.state = 2;
+      this.submitFormData();
+    },
+    distribution() {
+      this.formModel.state = 3;
+      this.submitFormData();
+    },
+    submitFormData() {
+      this.submitFormLoading = true;
+      this.$ajax({
+        url: this.config.url,
+        method: "put",
+        data: this.formModel,
+        success: res => {
+          this.showFormModal = false;
+          this.submitFormLoading = false;
+          this.$Message.success("操作成功");
+          this.closeFormModal();
+          this.getListData();
+        },
+        error: res => {
+          this.submitFormLoading = false;
+        }
+      });
+    }
   }
 };
 </script>

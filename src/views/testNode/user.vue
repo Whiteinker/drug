@@ -1,334 +1,319 @@
 <style lang="less">
-.distri-user-card {
-  .ivu-card {
-    width: 11%;
-    display: inline-block;
-    margin-left: 24px;
-    margin-bottom: 24px;
-    .ivu-card-body {
-      padding: 10px;
-    }
-    &:hover {
-      .btn-group {
-        opacity: 1;
-      }
-    }
-    .img {
-      /*float: left;*/
-      border-radius: 5px;
-      overflow: hidden;
-      width: 100%;
-      height: 200px;
-      margin: 0 auto;
-    }
-    .text {
-      /*float: right;*/
-      text-align: center;
-      h3 {
-        font-size: 14px;
-        margin: 5px 0;
-      }
-      p.orderCount {
-        font-size: 12px;
-      }
-    }
-  }
-  .btn-group {
-    opacity: 0;
-    background: rgba(0, 0, 0, 0.45);
-    width: 100%;
-    height: 100%;
-    position: absolute;
-    top: 0;
-    left: 0;
-    text-align: center;
-    transition: all 0.2s;
-    button,
-    .ivu-poptip {
-      top: 50%;
-      position: relative;
-    }
-    .ivu-poptip:hover .btn-group {
-      opacity: 1;
-    }
-  }
+.ztree * {
+  font-size: 14px !important;
 }
-
-.distri-file-base64 {
-  .ivu-avatar-large {
-    height: 190px;
-    i.ivu-icon {
-      line-height: 190px;
-    }
-  }
-  input[type="file"] {
-    height: 190px;
-  }
+span.tmpzTreeMove_arrow {
+  z-index: 1;
+}
+.ztree li span.button.add {
+  margin-left: 2px;
+  margin-right: -1px;
+  background-position: -144px 0;
+  vertical-align: top;
+  *vertical-align: middle;
 }
 </style>
 <template>
-	<div class='page-distri-user'>
-    <Card style='margin-bottom:10px;'>
-			<div slot="title" class="common-table-title">
-				<p>ws</p>			
-			</div>
-			<div class="common-search-box">	
-				<Input v-model="ws.content" placeholder="请输入发送内容"></Input>
-        	<Button type="primary"   @click='wsSend'>发送ws内容</Button>		
-				<!-- <Button type="primary" icon="search" :loading="searchLoading" @click='searchData'>搜索</Button>			 -->
-			</div>
-		</Card>
-		<Card>
-			<div slot="title" class="common-table-title">
-				<p>{{$store.getters.currentPageNameCN}}</p>
-				<div class="action">
-					<Button type="success" size="small" icon="plus-round" @click="openFormModal">增加</Button>
-					<Button type="info" size="small" icon="loop" @click='getListData'>刷新</Button>
+	<div class='page-zTree'>    
+		<Row :gutter="18">
+			<Col span="24">
+			<Card style='min-height:600px'>
+				<div slot="title" class="common-table-title">
+					<p>{{$store.getters.currentPageNameCN}}</p>
 				</div>
-			</div>
-			<div class="common-search-box">	
-				<Input v-model="searchFields.userName" placeholder="请输入姓名"></Input>
-				<Button type="primary" icon="search" :loading="searchLoading" @click='searchData'>搜索</Button>			
-			</div>
-			<Table v-if="listStyle=='navicon'" border class="margin-top-10" :loading="tableLoading" :columns="tableFields" :data="tableList" @on-selection-change='tableSelectionChange'></Table>
-			
-			<div class="common-page-box">
-				<Poptip class='fl' confirm transfer title="您确认删除这些内容吗？" @on-ok="deleteAllListData">
-					<Button v-if="listStyle=='navicon'" type="error" icon="trash-a">批量删除</Button>
-				</Poptip>
-				<Page show-sizer show-elevator :page-size-opts="config.pageSizeOpts" :page-size="config.pageSize" :total="config.total" :current="config.currentPage" @on-change="changePage" @on-page-size-change='changePageSize'></Page>
-			</div>
-		</Card>
-		<Modal v-model="showFormModal" width='50%' title="人员详情" :loading='submitFormLoading' @on-ok='submitFormData' @on-cancel="closeFormModal">
-			<div class='common-form-box'>
-				<Spin size="large" fix v-if="formLoading"></Spin>
-				<Form ref="formModel" label-position="right" :label-width="95" :model="formModel" :rules="formRule" inline>				
-					<FormItem label="姓名" prop="userName">
-						<Input v-model="formModel.userName" placeholder="请输入登录名"></Input>            
-					</FormItem>		
-          	<FormItem label="密码" prop="password">
-						 <Input v-model="formModel.password" placeholder="请输入登录密码"></Input>        
-					</FormItem>		
-         
-				</Form>
-			</div>
-		</Modal>	
+				<div style='position: relative;'>
+					<div style='margin-bottom:20px;'>
+						<Select style='width:200px' transfer v-model="searchFields.storeId" placeholder="请选择药店" filterable  @on-change='treeInit'>  
+							<Option v-for="t in cacheStore" :value="t.value" :key='t.value'>{{t.label }}</Option>
+						</Select>				
+					</div>
+					<Spin size="large" fix v-if="treeLoading"></Spin>
+          <div id='treeDemo' class='ztree'></div>
+				</div>  
+			</Card>
+			</Col>
+		</Row>		
 	</div>
 </template>
 <script>
 import mixins from "@/libs/mixins.js";
 import Cookies from "js-cookie";
 import Store from "store";
-// var ws = new WebSocket("ws://192.168.1.153:3000"); 
-// ws.onmessage=function(e){
-//   alert(`你有一条新订单${e.data}`)
-// }
+
 export default {
   name: "user",
-  mixins: [mixins.searchList, mixins.tableList, mixins.page, mixins.form],
+  mixins: [mixins.searchList],
   components: {},
   data() {
     return {
-      ws: {
-        content: ""
-      },
       config: {
-        url: "/user",
-        baseURL: "http://192.168.1.153:3000"
+        url: "/storeDrugCategory"
       },
-      //搜索字段
+      treeLoading: false,
       searchFields: {
-        userName: ""
+        storeId: Store.get("cacheStore")[0].value
       },
-      //表格配置
-      tableFields: [
-        {
-          title: "登录用户名",
-          key: "userName"
-        },
-         {
-          title: "登录密码",
-          key: "password"
-        },
-        {
-          title: "添加时间",
-          key: "createdAt"
-        },
-        {
-          title: "修改时间",
-          key: "updatedAt"
-        },
-        {
-          title: "操作",
-          width: 200,
-          key: "action",
-          render: (h, params) => {
-            return h("div", [
-              h(
-                "Button",
-                {
-                  props: {
-                    icon: "compose",
-                    type: "primary",
-                    size: "small"
-                  },
-                  style: {
-                    marginRight: "5px"
-                  },
-                  on: {
-                    click: () => {
-                      this.openFormModal({
-                        id: params.row.id
-                      });
-                    }
-                  }
-                },
-                "编辑"
-              ),
-              h(
-                "Poptip",
-                {
-                  props: {
-                    confirm: true,
-                    title: "您确定要删除这条数据吗?",
-                    transfer: true
-                  },
-                  on: {
-                    "on-ok": () => {
-                      this.deleteListData({
-                        id: params.row.id
-                      });
-                    }
-                  }
-                },
-                [
-                  h(
-                    "Button",
-                    {
-                      props: {
-                        icon: "trash-a",
-                        type: "error",
-                        size: "small"
-                      }
-                    },
-                    "删除"
-                  )
-                ]
-              )
-            ]);
-          }
-        }
-      ],
-      //表单数据字段
-      formModel: {
-        userName: "",
-          password: ""
+      editForm: {
+        ParentID: "",
+        storeId: Store.get("cacheStore")[0].value,
+        // CategoryName:'',
+        id: ""
+      },
+      addForm: {
+        ParentID: "",
+        storeId: Store.get("cacheStore")[0].value,
+        CategoryName: "新分类名称"
       }
     };
   },
-  computed: {},
+  computed: {
+    cacheStore() {
+      return Store.get("cacheStore");
+    }
+  },
   mounted() {
-    this.getListData();
+    this.zTreeInit();
+    this.treeInit();
   },
   methods: {
-    wsSend() {
-      ws.send(this.ws.content);
+    zTreeInit() {
+      var self = this;
+      var zNodes = [];
+      var setting = {
+        view: {
+          // expandSpeed: "",
+          addHoverDom: (treeId, treeNode) => {
+            var self = this;
+            var sObj = $("#" + treeNode.tId + "_span");
+            if (
+              treeNode.editNameFlag ||
+              $("#addBtn_" + treeNode.tId).length > 0
+            )
+              return;
+            var addStr =
+              "<span class='button add' id='addBtn_" +
+              treeNode.tId +
+              "' title='add node' onfocus='this.blur();'></span>";
+            sObj.after(addStr);
+            var btn = $("#addBtn_" + treeNode.tId);
+            if (btn) {
+              btn.bind("click", function() {
+                if (treeNode.level < 2) {
+                  var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+                  self.addForm.ParentID = treeNode.id;
+                  self.$ajax({
+                    url: self.config.url,
+                    method: "put",
+                    data: self.addForm,
+                    success: res => {
+                      self.$Message.success("新增成功");
+                      zTree.addNodes(treeNode, {
+                        id: res.data.ID,
+                        pId: treeNode.id,
+                        name: self.addForm.CategoryName
+                      });
+                    }
+                  });
+                  return false;
+                } else {
+                  self.$Message.warning("不能添加四级分类");
+                }
+              });
+            }
+          },
+          removeHoverDom: removeHoverDom,
+          selectedMulti: false
+        },
+        edit: {
+          enable: true
+        },
+        data: {
+          simpleData: {
+            enable: true
+          }
+        },
+        callback: {
+          beforeRemove: async (treeId, treeNode) => {
+            let result = false;
+            // var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+            // zTree.selectNode(treeNode);
+            await this.$ajax({
+              url: this.config.url + "/" + treeNode.id,
+              method: "delete",
+              success: res => {
+                this.treeLoading = false;
+                this.$Message.success("删除成功");
+                result = true;
+              },
+              error: () => {
+                this.treeLoading = false;
+              }
+            });
+            return result;
+          },
+          beforeRename: async (treeId, treeNode, newName) => {
+            if (newName.length == 0) {
+              setTimeout(() => {
+                var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+                zTree.cancelEditName();
+                this.$Message.warning("节点名称不能为空");
+              }, 0);
+              return false;
+            } else {
+              this.editForm.id = treeNode.id;
+              this.editForm.ParentID = treeNode.ParentID;
+              this.editForm.CategoryName = newName;
+              await this.$ajax({
+                url: this.config.url,
+                method: "put",
+                data: this.editForm,
+                success: res => {
+                  this.$Message.success("修改成功");
+                  return true;
+                }
+              });
+            }
+          },
+          onDrop: zTreeOnDrop,
+          beforeDrop: async (treeId, treeNodes, targetNode, moveType) => {
+            let dropSuccess = false;
+            this.editForm.id = treeNodes[0].id;
+            if (targetNode && moveType == "inner") {
+              this.editForm.ParentID = targetNode.id;
+            } else {
+              this.editForm.ParentID = 0; //treeNodes[0].ParentID
+            }
+            await this.$ajax({
+              url: this.config.url,
+              method: "put",
+              data: this.editForm,
+              success: res => {
+                this.$Message.success("修改成功");
+                dropSuccess = true;
+              }
+            });
+            return dropSuccess;
+          }
+        }
+      };
+      function zTreeBeforeDrop(treeId, treeNodes, targetNode, moveType) {
+        self.editForm.id = treeNodes[0].id;
+        if (targetNode && moveType == "inner") {
+          self.editForm.ParentID = targetNode.id;
+        } else {
+          self.editForm.ParentID = 0; //treeNodes[0].ParentID
+        }
+        return self.editTreeData();
+      }
+      function zTreeOnDrop(event, treeId, treeNodes, targetNode, moveType) {}
+      function beforeRemove(treeId, treeNode) {
+        var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+        zTree.selectNode(treeNode);
+        return confirm("确认删除 节点 -- " + treeNode.name + " 吗？");
+      }
+      function beforeRename(treeId, treeNode, newName) {
+        if (newName.length == 0) {
+          setTimeout(function() {
+            var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+            zTree.cancelEditName();
+            alert("节点名称不能为空.");
+          }, 0);
+          return false;
+        }
+        return true;
+      }
+
+      var newCount = 1;
+      function addHoverDom(treeId, treeNode) {
+        var sObj = $("#" + treeNode.tId + "_span");
+        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.tId).length > 0)
+          return;
+        var addStr =
+          "<span class='button add' id='addBtn_" +
+          treeNode.tId +
+          "' title='add node' onfocus='this.blur();'></span>";
+        sObj.after(addStr);
+        var btn = $("#addBtn_" + treeNode.tId);
+        if (btn)
+          btn.bind("click", function() {
+            var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+            zTree.addNodes(treeNode, {
+              id: 100 + newCount,
+              pId: treeNode.id,
+              name: "new node" + newCount++
+            });
+            return false;
+          });
+      }
+      function removeHoverDom(treeId, treeNode) {
+        $("#addBtn_" + treeNode.tId)
+          .unbind()
+          .remove();
+      }
+      this.setting = setting;
     },
-    //获取表格数据
-    getListData() {
-      this.tableLoading = true;
+    getTreeData() {
+      this.treeLoading = true;
       return this.$ajax({
         url: this.config.url,
-        baseURL: this.config.baseURL,
         method: "post",
         data: {
-          currentPage: this.config.currentPage,
-          pageSize: this.config.pageSize,
+          currentPage: 1,
+          pageSize: 9999,
           fields: this.searchFields
         },
         success: res => {
-          this.tableLoading = false;
-          this.tableList = res.data;
-          this.config.total = res.total;
-        },
-        error: () => {
-          this.tableLoading = false;
-        }
-      });
-    },
-    //删除表格数据
-    deleteListData(opt) {
-      this.tableLoading = true;
-      this.$ajax({
-        url: this.config.url + "/" + opt.id,
-        baseURL: this.config.baseURL,
-        method: "delete",
-        success: res => {
-          this.tableLoading = false;
-          this.$Message.success("删除成功");
-          if (this.currentPageState) {
-            this.config.currentPage = this.config.currentPage - 1;
-          }
-          this.getListData();
-        },
-        error: () => {
-          this.tableLoading = false;
-        }
-      });
-    },
-    //获取数据
-    getFormData(opt) {
-      this.formLoading = true;
-      return this.$ajax({
-        url: this.config.url + "/" + opt.id,
-        baseURL: this.config.baseURL,
-        method: "get",
-        success: res => {
-          this.formLoading = false;
-          for (let attr in this.formModel) {
-            this.formModel[attr] = res.data[attr];
-          }
-          this.formModel.id = res.data.id;
-        },
-        error: () => {
-          this.formLoading = false;
-        }
-      });
-    },
-    //提交表单(提交的loading做了特殊处理，为了iview的modal确定按钮回调做处理)
-    submitFormData() {
-      this.$refs["formModel"].validate(valid => {
-        if (valid) {
-          this.submitFormLoading = true;
-          this.$ajax({
-            url: this.config.url,
-            baseURL: this.config.baseURL,
-            method: "put",
-            data: this.formModel,
-            success: res => {
-              this.showFormModal = false;
-              this.submitFormLoading = false;
-              setTimeout(() => {
-                this.submitFormLoading = true;
-              }, 0);
-              this.$Message.success(this.formModel.id ? "修改成功" : "新增成功");
-              this.closeFormModal();
-              this.getListData();
-            },
-            error: res => {
-              this.submitFormLoading = false;
-              setTimeout(() => {
-                this.submitFormLoading = true;
-              }, 0);
-            }
+          this.treeLoading = false;
+          this.treeListHandle({
+            list: res.data
           });
-        } else {
-          this.submitFormLoading = false;
-          setTimeout(() => {
-            this.submitFormLoading = true;
-          }, 0);
+          this.treeList = res.data;
+          this.editForm.storeId = this.searchFields.storeId;
+          this.addForm.storeId = this.searchFields.storeId;
+        },
+        error: () => {
+          this.treeLoading = false;
         }
       });
+    },
+    editTreeData() {
+      this.$ajax({
+        url: "aa",
+        method: "put",
+        data: this.editForm,
+        success: res => {
+          // this.treeEditFormLoading = false;
+          this.$Message.success("修改成功");
+          this.getTreeData();
+          return true;
+          // this.getTreeData();
+          // this.treeExpandHandle({
+          // 	list: this.treeList,
+          // 	id: res.data.ID
+          // });
+          // this.clearTreeFormData();
+        },
+        error: () => {
+          return false;
+        }
+      });
+    },
+    treeListHandle(opt) {
+      opt.list.forEach(t => {
+        t.name = t.CategoryName;
+        t.pId = t.ParentID;
+        t.open = true;
+        if (t.children) {
+          this.treeListHandle({
+            list: t.children
+          });
+        }
+      });
+    },
+    async treeInit() {
+      await this.getTreeData();
+      // zNodes=this.treeList
+      $.fn.zTree.init($("#treeDemo"), this.setting, this.treeList);
     }
   }
 };

@@ -296,23 +296,23 @@ export const appRouter = [
 
 		]
 	},
-	{
-		path: '/textNode',
-		icon: 'social-yen',
-		name: 'textNode',
-		title: '测试node接口',
-		component: Main,
-		children: [{
-				path: 'user',
-				icon: 'document-text',
-				title: '用户表',
-				name: 'user',
-				component: resolve => {
-					require(['./views/testNode/user.vue'], resolve);
-				}
-			}
-		]
-	}
+	// {
+	// 	path: '/textNode',
+	// 	icon: 'social-yen',
+	// 	name: 'textNode',
+	// 	title: '测试node接口',
+	// 	component: Main,
+	// 	children: [{
+	// 			path: 'user',
+	// 			icon: 'document-text',
+	// 			title: '用户表',
+	// 			name: 'user',
+	// 			component: resolve => {
+	// 				require(['./views/testNode/user.vue'], resolve);
+	// 			}
+	// 		}
+	// 	]
+	// }
 	// {
 	// 	path: '/systemSetup',
 	// 	icon: 'gear-a',

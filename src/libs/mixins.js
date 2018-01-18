@@ -262,32 +262,30 @@ export default {
 				})
 			},
 			//打开表单弹窗
-			async openFormModal(opt) {
+			openFormModal(opt) {
 				this.showFormModal = true;
 				if (opt && opt.id) {
-					await this.getFormData({
+					this.getFormData({
 						id: opt.id
 					});
 				}
 			},
 			//打开查看表单弹窗
-			async openSeeFormModal(opt) {
+			openSeeFormModal(opt) {
 				this.showSeeFormModal = true;
 				if (opt && opt.id) {
-					await this.getFormData({
+					this.getFormData({
 						id: opt.id
 					});
 				}
 			},
 			//关闭表单弹窗
 			closeFormModal() {
-				//				this.showFormModal = false;
+				this.showFormModal = false;
 				this.$refs['formModel'].resetFields();
 				if (this.formModel.id) {
 					delete this.formModel.id
 				};
-
-
 			},
 			//图片字段base64的处理
 			changeFile(e, key) {	
@@ -296,9 +294,8 @@ export default {
 					height: 300,
 					quality: 1
 				}).then((res) => {
-					this.formModel[key] = res.base64;
-					//处理第二次change失效
-					e.target.setAttribute('type','text')
+					this.formModel[key] = res.base64;					
+					e.target.setAttribute('type','text')//处理第二次change失效
 					e.target.setAttribute('type','file')
 				})
 			},

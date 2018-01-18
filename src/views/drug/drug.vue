@@ -369,7 +369,7 @@ export default {
         dosage: "",
         unitPrice: "",
         specification: "",
-        storeId: "",
+        storeId: Store.get("cacheStore")[0].value,
         userId: Cookies.get("id"),
         state: 1,
         inventoryNum: 0,

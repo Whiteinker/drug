@@ -28,9 +28,68 @@
   .ivu-modal-footer {
     display: none;
   }
-  .btn-group{
+  .btn-group {
     text-align: center;
-    margin-top:20px;
+    margin-top: 20px;
+  }
+}
+.distri-user-modal {
+  .distri-user-card {
+    .ivu-card {
+      width: 120px;
+      display: inline-block;
+      margin-left: 24px;
+      margin-bottom: 24px;
+      .ivu-card-body {
+        padding: 10px;
+      }
+      &:hover {
+        .btn-group {
+          opacity: 1;
+        }
+      }
+      .img {
+        /*float: left;*/
+        border-radius: 5px;
+        overflow: hidden;
+        width: 100%;
+        height: 120px;
+        margin: 0 auto;
+      }
+      .text {
+        /*float: right;*/
+        text-align: center;
+        h3 {
+          font-size: 14px;
+          margin: 5px 0;
+        }
+        p.orderCount {
+          font-size: 12px;
+        }
+      }
+    }
+    .btn-group {
+      opacity: 0;
+      background: rgba(0, 0, 0, 0.45);
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      text-align: center;
+      transition: all 0.2s;
+      button,
+      .ivu-poptip {
+        top: 50%;
+        position: relative;
+      }
+      .ivu-poptip:hover .btn-group {
+        opacity: 1;
+      }
+    }
+  }
+  .ivu-modal-footer {
+    display: none;
   }
 }
 </style>
@@ -109,7 +168,7 @@
 						</FormItem>
 
 					</Alert>
-					<Table border class="margin-top-10" :columns="drugTableFields" :data="formModel.orderDetail"></Table>
+					<Table border class="margin-top-10" :columns="drugTableFields" :data="formModel.orderDetail" height='200'></Table>
 					<div class="total-box">
 						总金额
 						<b><span>￥</span>{{formModel.totalPrice}}</b>
@@ -117,10 +176,33 @@
 				</Form>
         <div class='btn-group' slot='footer'>
              <Button v-if='formModel.state==1' type="primary" :loading='submitFormLoading' @click='meetOrder'>接单</Button>
-              <Button v-if='formModel.state==2' type="primary" :loading='submitFormLoading' @click='distribution'>配送</Button>
+             <div v-if='formModel.state==2'>
+               <span style='cursor: pointer;margin-right:5px;' @click='openDistriUserFormModal'>
+                 配送员：{{formModel.distriUserName}}
+               </span>
+                <Button  type="primary" :loading='submitFormLoading' @click='distribution'>配送</Button>
+             </div>
+             
         </div>
 			</div>
 		</Modal>
+    <Modal class='distri-user-modal' v-model="showDistriUserFormModal" width='40%' title="配送员列表">
+      <div class="margin-top-10 card-list-box distri-user-card" style='margin-left:-24px;'>
+              <Spin size="large" fix v-if="distriUserListLoading"></Spin>
+              <Card v-for='(t,i) in distriUserList' @click.native='changeDistriUser(t)'>
+                <div class="img">
+                  <img :src="t.photo" style='width:100%;height:100%;'>
+                </div>
+                <div class="text">
+                  <h3><Icon type="ios-person"></Icon>  {{t.userName}}
+                  </h3>
+                  <!-- <p>
+                    <Icon type="iphone"></Icon> {{t.mobile}}</p>
+                  <p class='orderCount'>已送：{{t.orderCount}}单</p> -->
+                </div>               
+              </Card>
+            </div>
+    </Modal>
 	</div>
 </template>
 <script>
@@ -133,6 +215,9 @@ export default {
   components: {},
   data() {
     return {
+      distriUserList: [],
+      distriUserListLoading: false,
+      showDistriUserFormModal: false,
       submitFormLoading: false,
       stepsStatus: "process", //步骤条状态
       config: {
@@ -329,6 +414,7 @@ export default {
       ],
       //表单数据字段
       formModel: {
+        distriUserId: "",
         storeName: "",
         orderCode: "",
         comeFrom: "",
@@ -360,14 +446,21 @@ export default {
     },
     distribution() {
       this.formModel.state = 3;
-      this.submitFormData();
+      this.submitFormData({
+          url:'/distriRecord',
+          data:{
+            state:this.formModel.state,
+            orderId:this.formModel.id,
+            distriUserId:this.formModel.distriUserId
+          }
+      });
     },
-    submitFormData() {
+    submitFormData(opt) {
       this.submitFormLoading = true;
       this.$ajax({
-        url: this.config.url,
+        url: opt&&opt.url||this.config.url,
         method: "put",
-        data: this.formModel,
+        data: opt&&opt.data||this.formModel,
         success: res => {
           this.showFormModal = false;
           this.submitFormLoading = false;
@@ -379,6 +472,36 @@ export default {
           this.submitFormLoading = false;
         }
       });
+    },
+    openDistriUserFormModal() {
+      this.showDistriUserFormModal = true;
+      this.distriUserListLoading = true;
+      this.$ajax({
+        url: "/distriUser",
+        method: "post",
+        data: {
+          currentPage: 1,
+          pageSize: 999,
+          fields: {
+            userName: "",
+            storeId: Store.get("cacheStore")[0].value,
+            userId: Cookies.get("id")
+          }
+        },
+        success: res => {
+          this.distriUserListLoading = false;
+          this.distriUserList = res.data;
+        },
+        error: () => {
+          this.distriUserListLoading = false;
+        }
+      });
+    },
+    changeDistriUser(distriUser) {
+      this.formModel.distriUserId = distriUser.id;
+      this.formModel.distriUserName = distriUser.userName;
+      this.formModel.distriUserPhone = distriUser.mobile;
+      this.showDistriUserFormModal = false;
     }
   }
 };

@@ -387,7 +387,7 @@ export default {
         document.querySelector(".pie-chart").style.display = "none";
       }
     },
-    //重写mixins编辑弹窗
+    //重写mixins查看弹窗
     async openSeeFormModal(opt) {
       this.showSeeFormModal = true;
       if (opt && opt.id) {

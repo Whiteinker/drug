@@ -25,7 +25,8 @@ span.tmpzTreeMove_arrow {
 					<div style='margin-bottom:20px;'>
 						<Select style='width:200px' transfer v-model="searchFields.storeId" placeholder="请选择药店" filterable  @on-change='treeInit'>  
 							<Option v-for="t in cacheStore" :value="t.value" :key='t.value'>{{t.label }}</Option>
-						</Select>				
+						</Select>	
+             <Button  type="primary" icon="plus-round" :loading='addTreeLoading' @click='addTreeRootNode'>添加顶级分类</Button>		
 					</div>
 					<Spin size="large" fix v-if="treeLoading"></Spin>
           <div id='treeDemo' class='ztree'></div>
@@ -46,6 +47,8 @@ export default {
   components: {},
   data() {
     return {
+      addTreeLoading: false,
+      setting: {}, //ztree的配置对象
       config: {
         url: "/storeDrugCategory"
       },
@@ -56,7 +59,6 @@ export default {
       editForm: {
         ParentID: "",
         storeId: Store.get("cacheStore")[0].value,
-        // CategoryName:'',
         id: ""
       },
       addForm: {
@@ -77,13 +79,11 @@ export default {
   },
   methods: {
     zTreeInit() {
-      var self = this;
       var zNodes = [];
       var setting = {
         view: {
-          // expandSpeed: "",
           addHoverDom: (treeId, treeNode) => {
-            var self = this;
+            var zTree = $.fn.zTree.getZTreeObj("treeDemo");
             var sObj = $("#" + treeNode.tId + "_span");
             if (
               treeNode.editNameFlag ||
@@ -93,39 +93,65 @@ export default {
             var addStr =
               "<span class='button add' id='addBtn_" +
               treeNode.tId +
-              "' title='add node' onfocus='this.blur();'></span>";
+              "' title='add node' onfocus='this.blur()'></span>";
+            var removeStr =
+              "<span class='button remove' id='removeBtn_" +
+              treeNode.tId +
+              "' title='add node' onfocus='this.blur();' style='float:right'></span>";
+            sObj.after(removeStr);
             sObj.after(addStr);
-            var btn = $("#addBtn_" + treeNode.tId);
-            if (btn) {
-              btn.bind("click", function() {
-                if (treeNode.level < 2) {
-                  var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-                  self.addForm.ParentID = treeNode.id;
-                  self.$ajax({
-                    url: self.config.url,
-                    method: "put",
-                    data: self.addForm,
-                    success: res => {
-                      self.$Message.success("新增成功");
-                      zTree.addNodes(treeNode, {
-                        id: res.data.ID,
-                        pId: treeNode.id,
-                        name: self.addForm.CategoryName
-                      });
-                    }
-                  });
+            var addBtn = $("#addBtn_" + treeNode.tId);
+            var removeBtn = $("#removeBtn_" + treeNode.tId);
+            if (addBtn) {
+              addBtn.bind("click", () => {
+                if (treeNode.level >= 2) {
+                  this.$Message.warning("不能添加四级分类");
                   return false;
-                } else {
-                  self.$Message.warning("不能添加四级分类");
                 }
+                this.addForm.ParentID = treeNode.id;
+                this.$ajax({
+                  url: this.config.url,
+                  method: "put",
+                  data: this.addForm,
+                  success: res => {
+                    this.$Message.success("新增成功");
+                    zTree.addNodes(treeNode, {
+                      id: res.data.ID,
+                      pId: treeNode.id,
+                      name: this.addForm.CategoryName
+                    });
+                  }
+                });
+              });
+              removeBtn.bind("click", () => {
+                if (treeNode.children) {
+                  this.$Message.warning("有子集，不能删除");
+                  return false;
+                }
+                this.$ajax({
+                  url: this.config.url + "/" + treeNode.id,
+                  method: "delete",
+                  success: res => {
+                    this.$Message.success("删除成功");
+                    zTree.removeNode(treeNode);
+                  }
+                });
               });
             }
           },
-          removeHoverDom: removeHoverDom,
+          removeHoverDom: (treeId, treeNode) => {
+            $("#addBtn_" + treeNode.tId)
+              .unbind()
+              .remove();
+            $("#removeBtn_" + treeNode.tId)
+              .unbind()
+              .remove();
+          },
           selectedMulti: false
         },
         edit: {
-          enable: true
+          enable: true,
+          showRemoveBtn: false
         },
         data: {
           simpleData: {
@@ -133,24 +159,7 @@ export default {
           }
         },
         callback: {
-          beforeRemove: async (treeId, treeNode) => {
-            let result = false;
-            // var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            // zTree.selectNode(treeNode);
-            await this.$ajax({
-              url: this.config.url + "/" + treeNode.id,
-              method: "delete",
-              success: res => {
-                this.treeLoading = false;
-                this.$Message.success("删除成功");
-                result = true;
-              },
-              error: () => {
-                this.treeLoading = false;
-              }
-            });
-            return result;
-          },
+          beforeRemove: (treeId, treeNode) => {},
           beforeRename: async (treeId, treeNode, newName) => {
             if (newName.length == 0) {
               setTimeout(() => {
@@ -174,82 +183,32 @@ export default {
               });
             }
           },
-          onDrop: zTreeOnDrop,
-          beforeDrop: async (treeId, treeNodes, targetNode, moveType) => {
-            let dropSuccess = false;
-            this.editForm.id = treeNodes[0].id;
-            if (targetNode && moveType == "inner") {
-              this.editForm.ParentID = targetNode.id;
-            } else {
-              this.editForm.ParentID = 0; //treeNodes[0].ParentID
+          beforeDrop: (treeId, treeNodes, targetNode, moveType) => {
+            if (moveType != "inner") {
+              return false;
             }
-            await this.$ajax({
+            if (targetNode.level >= 2) {
+              this.$Message.warning("不能移动到三级分类下");
+              return false;
+            }
+            if (treeNodes[0].children) {
+              this.$Message.warning("有子集，不能移动");
+              return false;
+            }
+            this.editForm.id = treeNodes[0].id;
+            this.editForm.ParentID = targetNode ? targetNode.id : 0;
+            this.$ajax({
               url: this.config.url,
               method: "put",
               data: this.editForm,
               success: res => {
                 this.$Message.success("修改成功");
-                dropSuccess = true;
               }
             });
-            return dropSuccess;
+            return true;
           }
         }
       };
-      function zTreeBeforeDrop(treeId, treeNodes, targetNode, moveType) {
-        self.editForm.id = treeNodes[0].id;
-        if (targetNode && moveType == "inner") {
-          self.editForm.ParentID = targetNode.id;
-        } else {
-          self.editForm.ParentID = 0; //treeNodes[0].ParentID
-        }
-        return self.editTreeData();
-      }
-      function zTreeOnDrop(event, treeId, treeNodes, targetNode, moveType) {}
-      function beforeRemove(treeId, treeNode) {
-        var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-        zTree.selectNode(treeNode);
-        return confirm("确认删除 节点 -- " + treeNode.name + " 吗？");
-      }
-      function beforeRename(treeId, treeNode, newName) {
-        if (newName.length == 0) {
-          setTimeout(function() {
-            var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            zTree.cancelEditName();
-            alert("节点名称不能为空.");
-          }, 0);
-          return false;
-        }
-        return true;
-      }
-
-      var newCount = 1;
-      function addHoverDom(treeId, treeNode) {
-        var sObj = $("#" + treeNode.tId + "_span");
-        if (treeNode.editNameFlag || $("#addBtn_" + treeNode.tId).length > 0)
-          return;
-        var addStr =
-          "<span class='button add' id='addBtn_" +
-          treeNode.tId +
-          "' title='add node' onfocus='this.blur();'></span>";
-        sObj.after(addStr);
-        var btn = $("#addBtn_" + treeNode.tId);
-        if (btn)
-          btn.bind("click", function() {
-            var zTree = $.fn.zTree.getZTreeObj("treeDemo");
-            zTree.addNodes(treeNode, {
-              id: 100 + newCount,
-              pId: treeNode.id,
-              name: "new node" + newCount++
-            });
-            return false;
-          });
-      }
-      function removeHoverDom(treeId, treeNode) {
-        $("#addBtn_" + treeNode.tId)
-          .unbind()
-          .remove();
-      }
       this.setting = setting;
     },
     getTreeData() {
@@ -264,7 +223,7 @@ export default {
         },
         success: res => {
           this.treeLoading = false;
-          this.treeListHandle({
+          this.a({
             list: res.data
           });
           this.treeList = res.data;
@@ -291,20 +250,20 @@ export default {
           // 	list: this.treeList,
           // 	id: res.data.ID
           // });
-          // this.clearTreeFormData();
+          // this.clearTreeFormData();   
         },
         error: () => {
           return false;
         }
       });
     },
-    treeListHandle(opt) {
+    a(opt) {
       opt.list.forEach(t => {
         t.name = t.CategoryName;
         t.pId = t.ParentID;
         t.open = true;
         if (t.children) {
-          this.treeListHandle({
+          this.a({
             list: t.children
           });
         }
@@ -314,6 +273,27 @@ export default {
       await this.getTreeData();
       // zNodes=this.treeList
       $.fn.zTree.init($("#treeDemo"), this.setting, this.treeList);
+    },
+    addTreeRootNode() {
+      this.addTreeLoading = true;
+      var zTree = $.fn.zTree.getZTreeObj("treeDemo");
+      this.addForm.ParentID = 0;
+      this.$ajax({
+        url: this.config.url,
+        method: "put",
+        data: this.addForm,
+        success: res => {
+          this.addTreeLoading = false;
+          this.$Message.success("新增成功");
+          zTree.addNodes(null, {
+            id: res.data.ID,
+            name: this.addForm.CategoryName
+          });
+        },
+        error: () => {
+          this.addTreeLoading = false;
+        }
+      });
     }
   }
 };

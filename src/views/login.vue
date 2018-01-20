@@ -72,7 +72,6 @@
 		</div>
 	</div>
 </template>
-
 <script>
 import Cookies from "js-cookie";
 import Store from "store";

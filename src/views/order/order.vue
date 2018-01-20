@@ -108,7 +108,7 @@
 							<Option v-for="t in cacheStore" :value="t.value" :key='t.value'>{{t.label }}</Option>
 				</Select>
 				<Input v-model="searchFields.orderCode" placeholder="请输入完整订单号"></Input>
-				<Input v-model="searchFields.guestName" placeholder="请输入收货人姓名"></Input>       
+				<Input v-model="searchFields.orderUserName" placeholder="请输入收货人姓名"></Input>       
 				<DatePicker ref='DatePicker' type="daterange" v-model='searchDaterange' :options='searchDaterangeOptions' format='yyyy-MM-dd' placeholder="请输入订单起止时间"></DatePicker>
 				<Button type="primary" icon="search" :loading="searchLoading" @click='searchData'>搜索</Button>
 			</div>
@@ -226,7 +226,7 @@ export default {
       //搜索字段
       searchFields: {
         orderCode: "",
-        guestName: "",
+        orderUserName: "",
         startDate: "",
         endDate: "",
         state: "0",

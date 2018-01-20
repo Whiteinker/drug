@@ -12,7 +12,7 @@ fs.open('./src/config/env.js', 'w', function(err, fd) {
 
 module.exports = merge(webpackBaseConfig, {
 	output: {
-		publicPath: 'http://192.168.1.243:8021/dist/', //写域名
+		publicPath: 'https://github.com/zhuhuanchang/drug/tree/master/dist/', //写域名
 		filename: '[name].[hash].js',
 		chunkFilename: '[name].[hash].chunk.js'
 	},

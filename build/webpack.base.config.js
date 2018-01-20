@@ -8,7 +8,8 @@ function resolve(dir) {
 
 module.exports = {
 	entry: {
-		main: './src/main',
+		main: ["babel-polyfill", "./src/main.js"], //兼容IE11
+		// main: './src/main',
 		vendors: './src/vendors'
 	},
 	output: {

@@ -35,6 +35,7 @@
 </template>
 <script>
 	import mixins from '@/libs/mixins.js'
+	import Cookies from "js-cookie";
 	export default {
 		name: 'capitalFlow',
 		mixins: [mixins.searchList, mixins.tableList, mixins.page],
@@ -49,6 +50,7 @@
 				searchFields: {
 					startDate: '',
 					endDate: '',
+					userId: Cookies.get("id")
 				},
 				//表格配置
 				tableFields: [ 

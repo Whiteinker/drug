@@ -25,6 +25,7 @@
 </template>
 <script>
 import mixins from "@/libs/mixins.js";
+import Cookies from "js-cookie";
 export default {
   name: "withdrawalsRecord",
   mixins: [mixins.searchList, mixins.tableList, mixins.page],
@@ -37,7 +38,8 @@ export default {
       //搜索字段
       searchFields: {
         startDate: "",
-        endDate: ""
+        endDate: "",
+        userId: Cookies.get("id")
       },
       //表格配置
       tableFields: [

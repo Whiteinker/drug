@@ -1,3 +1,4 @@
+
 import Vue from 'vue';
 import iView from 'iview';
 import VueRouter from 'vue-router';
@@ -11,7 +12,7 @@ import Util from './libs/util';
 import App from './app.vue';
 import Cookies from 'js-cookie';
 import 'iview/dist/styles/iview.css';
-import "babel-polyfill"; //兼容IE
+
 
 import VueI18n from 'vue-i18n';
 import Locales from './locale';
@@ -29,14 +30,16 @@ Vue.use(Vuex);
 Vue.use(VueI18n);
 Vue.use(iView);
 Vue.use(ajax);
-// 自动设置语言
-const navLang = navigator.language;
-const localLang = (navLang === 'zh-CN' || navLang === 'en-US') ? navLang : false;
-const lang = window.localStorage.lang || localLang || 'zh-CN';
 
-Vue.config.lang = lang;
+// 自动设置语言
+// const navLang = navigator.language;
+// const localLang = (navLang === 'zh-CN' || navLang === 'en-US') ? navLang : false;
+// const lang = window.localStorage.lang || localLang || 'zh-CN';
+
+// Vue.config.lang = lang;
 
 // 多语言配置
+
 const locales = Locales;
 const mergeZH = Object.assign(zhLocale, locales['zh-CN']);
 const mergeEN = Object.assign(enLocale, locales['en-US']);
@@ -96,6 +99,7 @@ router.afterEach(() => {
 	window.scrollTo(0, 0);
 });
 // 状态管理
+
 const store = new Vuex.Store({
 	state: {
 		routers: [
@@ -418,6 +422,7 @@ const store = new Vuex.Store({
 		}
 	}
 });
+
 
 new Vue({
 	el: '#app',

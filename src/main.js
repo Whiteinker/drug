@@ -1,5 +1,7 @@
 
 import Vue from 'vue';
+import promise from 'es6-promise'
+ promise.polyfill()
 import iView from 'iview';
 import VueRouter from 'vue-router';
 import {

@@ -83,7 +83,7 @@
 				<Card :padding="0">
 					<p slot="title" class="card-title">
 						<Icon type="map"></Icon>
-						今日服务调用地理分布
+						今日订单来源地理分布
 					</p>
 					<div class="map-con">
 						<Col span="10">
@@ -138,7 +138,7 @@
 			<Card>
 				<p slot="title" class="card-title">
 					<Icon type="ios-shuffle-strong"></Icon>
-					上周每日服务调用量(万)
+					上周每日订单量(万)
 				</p>
 				<div class="line-chart-con">
 					<service-requests></service-requests>
@@ -176,19 +176,19 @@
 		data() {
 			return {
 				toDoList: [{
-						title: '去iView官网学习完整的iView组件'
+						title: '您有一条新的订单，请注意查看'
 					},
 					{
-						title: '去iView官网学习完整的iView组件'
+						title: '您有一条新的订单，请注意查看'
 					},
 					{
-						title: '去iView官网学习完整的iView组件'
+						title: '您有一条新的订单，请注意查看'
 					},
 					{
-						title: '去iView官网学习完整的iView组件'
+						title: '您有一条新的订单，请注意查看'
 					},
 					{
-						title: '去iView官网学习完整的iView组件'
+						title: '您有一条新的订单，请注意查看'
 					}
 				],
 				count: {

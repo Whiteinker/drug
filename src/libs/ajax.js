@@ -3,8 +3,9 @@ export default {
 	install(Vue, options) {
 		var ajaxOption = {
 			//'http://192.168.1.243:8021/api/api',线上地址
-			//'http://192.168.1.243:8021/',//开发调试地址
-			baseURL:  'http://192.168.1.243:8021/api',
+			//'http://192.168.1.243:8021/',//开发调试地址  
+
+			baseURL:  'http://drugstore.xuhuicn.com:81/api/',
 			method: 'post',
 			headers: {
 				'X-Auth-Token': '123toen'

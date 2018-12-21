@@ -39,49 +39,60 @@
 </style>
 
 <template>
-	<div class="login" @keydown.enter="handleSubmit">
-		<div class="login-con">
-			<Card :bordered="false">
-				<p slot="title">
-					<Icon type="log-in"></Icon>
-					药品配送平台
-				</p>
-				<div class="form-con">
-					<Form ref="loginForm" :model="form" :rules="rules">
-						<FormItem prop="mobile">
-							<Input v-model="form.mobile" placeholder="请输入手机号">
-							<span slot="prepend">
-                                    <Icon :size="16" type="ios-telephone"></Icon>
-                                </span>
-							</Input>
-						</FormItem>
-						<FormItem prop="password">
-							<Input type="password" v-model="form.password" placeholder="请输入密码">
-							<span slot="prepend">
-                                    <Icon :size="14" type="locked"></Icon>
-                                </span>
-							</Input>
-						</FormItem>
-						<FormItem>
-							<Button @click="handleSubmit" :loading='loading' type="primary" long>登录</Button>
-						</FormItem>
-					</Form>
-					<!--<p class="login-tip">输入任意用户名和密码即可</p>-->
-				</div>
-			</Card>
-		</div>
-	</div>
+  <div class="login"
+       @keydown.enter="handleSubmit">
+    <div class="login-con">
+      <Card :bordered="false">
+        <p slot="title">
+          <Icon type="log-in"></Icon>
+          药品配送平台
+        </p>
+        <div class="form-con">
+          <Form ref="loginForm"
+                :model="form"
+                :rules="rules">
+            <FormItem prop="mobile">
+              <Input v-model="form.mobile"
+                     placeholder="请输入手机号">
+              <span slot="prepend">
+                <Icon :size="16"
+                      type="ios-telephone"></Icon>
+              </span>
+              </Input>
+            </FormItem>
+            <FormItem prop="password">
+              <Input type="password"
+                     v-model="form.password"
+                     placeholder="请输入密码">
+              <span slot="prepend">
+                <Icon :size="14"
+                      type="locked"></Icon>
+              </span>
+              </Input>
+            </FormItem>
+            <FormItem>
+              <Button @click="handleSubmit"
+                      :loading='loading'
+                      type="primary"
+                      long>登录</Button>
+            </FormItem>
+          </Form>
+          <!--<p class="login-tip">输入任意用户名和密码即可</p>-->
+        </div>
+      </Card>
+    </div>
+  </div>
 </template>
 <script>
 import Cookies from "js-cookie";
 import Store from "store";
 export default {
-  data() {
+  data () {
     return {
       loading: false,
       form: {
-        mobile: "13819734127",
-        password: "123456"
+        mobile: "",
+        password: ""
       },
       rules: {
         mobile: [
@@ -100,7 +111,7 @@ export default {
     };
   },
   methods: {
-    handleSubmit() {
+    handleSubmit () {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           this.loading = true;
@@ -134,7 +145,7 @@ export default {
       });
     },
     //药店localStorage缓存
-    cacheStore() {
+    cacheStore () {
       return this.$ajax({
         url: "/store",
         method: "post",
@@ -161,5 +172,4 @@ export default {
 </script>
 
 <style>
-
 </style>

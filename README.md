@@ -8,11 +8,10 @@
 
 <img src="https://github.com/zhuhuanchang/drug/blob/master/images/1.png">
 <img src="https://github.com/zhuhuanchang/drug/blob/master/images/2.png">
+<img src="https://github.com/zhuhuanchang/drug/blob/master/images/3.png">
+<img src="https://github.com/zhuhuanchang/drug/blob/master/images/4.png">
+<img src="https://github.com/zhuhuanchang/drug/blob/master/images/5.png">
+<img src="https://github.com/zhuhuanchang/drug/blob/master/images/6.png">
+<img src="https://github.com/zhuhuanchang/drug/blob/master/images/7.png">
 
-##	贡献
 
-有任何意见或建议都欢迎提 issue
-
-##	License
-
-MIT
